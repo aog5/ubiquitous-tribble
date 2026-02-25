@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neural Processing Profile</title>
+  <meta name="description" content="Map your cognitive architecture across six dimensions.">
+  <meta property="og:title" content="Neural Processing Profile">
+  <meta property="og:description" content="An adaptive assessment that maps how you take in information, what you do with it internally, and where your energy goes.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,600;1,6..72,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: #0B0F1A; color: #E2E8F0; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+  </style>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+const { useState, useEffect, useCallback, useMemo, useRef } = React;
+
+// ─── PROFILE DEFINITIONS (rich descriptions, no MBTI/Enneagram in main view) ───
+const PROFILES = {
+analytical_explorer: {
+name: “Analytical Explorer”,
+short: “AE”,
+color: “#3B82F6”,
+mbti: “INTP / ENTP”,
+enneagram: “5w4 or 5w6”,
+summary: “You move through the world by branching — every idea opens three more doors, every system reveals deeper structure, and the exploration itself is the reward.”,
+architecture: “Your mind combines high sensory openness with a rich inner world and powerful analytical capacity. You don’t just think about things — you build comprehensive mental models that attempt to capture the full complexity of what you encounter. Information flows in freely, gets simulated and cross-referenced internally, and is organized into frameworks almost automatically.”,
+lived: “In practice, this means your mind is rarely quiet. You’re the person who reads about one topic and emerges four hours later having followed a thread through six adjacent fields. Conversations with you tend to branch — you see connections others miss, and you instinctively want to map the whole territory rather than settle for a single path through it. Your understanding tends to be broad and interconnected rather than narrow and deep, though you’re capable of depth when a particular system captures your attention.”,
+strengths: “You’re exceptionally good at seeing how things relate across domains, identifying non-obvious patterns, and building models that make complex systems legible. You bring a rare combination of intellectual range and analytical precision that makes you valuable in any context requiring creative problem-solving or systems thinking.”,
+daytoday: “The cost of this architecture is real: you may struggle to explain your thinking to others (it’s hard to linearize a web), you can get lost in exploration at the expense of execution, and you may find it genuinely difficult to stop analyzing and just act. Environments that demand narrow focus or rote repetition will drain you quickly. You thrive when given complex, open-ended problems and the freedom to follow your curiosity.”,
+},
+convergent_architect: {
+name: “Convergent Architect”,
+short: “CA”,
+color: “#8B5CF6”,
+mbti: “INTJ / INFJ”,
+enneagram: “5w4 or 1w9”,
+summary: “You process the world by seeking the one deep pattern underneath everything — information converges into unified insights that arrive whole, not assembled piece by piece.”,
+architecture: “Your mind combines rich inner simulation with powerful analytical capacity, but oriented toward synthesis rather than expansion. Where others branch outward, you drive inward — pulling disparate information into a single coherent vision. Your insights tend to arrive as gestalts: suddenly the pieces click and you see the whole.”,
+lived: “You probably know the experience of working on a problem for days or weeks, and then having the answer simply appear — fully formed, as if your mind had been assembling it below conscious awareness. You’re drawn to frameworks, theories, and architectures that unify. You find it deeply satisfying when many separate observations collapse into a single elegant explanation. You may frustrate others by being certain about conclusions you can’t yet articulate — the knowing arrives before the words.”,
+strengths: “You excel at long-range vision, strategic thinking, and building systems that hold together under pressure. Your ability to synthesize across domains and see where things are heading makes you invaluable for planning, design, and any work that requires seeing the whole before building the parts.”,
+daytoday: “The vulnerability of this architecture is its dependency on coherence. When your work, relationships, and interests don’t connect to a larger purpose, it can feel genuinely destabilizing — like cognitive entropy. You may also struggle with the gap between your inner vision and the slow, messy process of realizing it in the world. Patience with incremental progress doesn’t come naturally when you can already see the finished form.”,
+},
+ae_ca_hybrid: {
+name: “Analytical Explorer ↔ Convergent Architect”,
+short: “AE↔CA”,
+color: “#6366F1”,
+mbti: “INTJ / INTP (oscillating)”,
+enneagram: “5w4 (most common)”,
+summary: “You operate across two modes that most people experience as separate: expansive exploration and convergent synthesis. You explore broadly but can’t rest until it converges.”,
+architecture: “This is a high-bandwidth architecture that runs two engines simultaneously. One part of your mind is constantly branching — following connections, mapping adjacent territory, pulling in new information. The other is constantly synthesizing — looking for the underlying pattern, testing whether the new data fits the emerging model, driving toward a unified understanding. These two processes fuel each other: exploration generates the raw material that convergence needs, and convergence generates the questions that direct further exploration.”,
+lived: “You probably experience intellectual life as a cycle: periods of voracious intake where everything is interesting and connected, followed by periods of intense synthesis where the pieces suddenly arrange themselves into a pattern you can see but not yet articulate. You may frustrate both the pure explorers in your life (who think you’re too focused on ‘the answer’) and the pure builders (who think you waste time on tangents). The truth is that your tangents serve your convergence — they just do it on a timeline others can’t see.”,
+strengths: “You combine the explorer’s range with the architect’s depth. This makes you exceptionally good at solving novel, complex problems that require both broad knowledge and structural insight. You can see both the forest and the trees, and more importantly, you can see how specific trees reveal the shape of the forest.”,
+daytoday: “The cost is significant: this architecture demands a lot of energy to run. You’re processing on two tracks simultaneously, and when they’re not aligned — when your exploration and your convergence are pointing in different directions — it can feel like internal friction. You’re also deeply dependent on having a unifying thread across your domains. When your work, creative life, and relationships feel like disconnected silos, the switching costs become enormous. When they feel like facets of one thing, you’re nearly unstoppable.”,
+},
+immersive_explorer: {
+name: “Immersive Explorer”,
+short: “IE”,
+color: “#EC4899”,
+mbti: “INFP”,
+enneagram: “4w5 or 9w1”,
+summary: “You process the world through deep feeling and narrative — your inner life is vivid, emotionally rich, and oriented toward meaning-making through language and story.”,
+architecture: “Your mind prioritizes depth of felt experience over structural analysis. You have high sensory openness and a rich inner world, but your processing is oriented toward inhabiting experience rather than dissecting it. You don’t analyze a sunset — you feel it, and later you might find words for what it meant.”,
+lived: “Your inner world is likely populated with vivid imagery, imagined conversations, emotional landscapes, and narrative fragments. You process important experiences by turning them over internally, sometimes for weeks or months, until they resolve into something you can express. Writing, art, or other creative expression isn’t a hobby for you — it’s how you complete your processing. Without it, experiences accumulate unfinished.”,
+strengths: “You have an extraordinary capacity for emotional depth, empathy through felt experience, and the kind of meaning-making that connects disparate life events into a coherent personal narrative. Your creative expression, when you find the right medium, can move people in ways that more analytical minds cannot.”,
+daytoday: “The challenge is that this depth takes time and space. You need significant solitude to process, and interruptions to your inner work can feel like violations. You may struggle in environments that demand quick, surface-level engagement, and you may find it painful to explain yourself to people who process more analytically. The gap between what you feel and what you can say is real and persistent.”,
+},
+aesthetic_guardian: {
+name: “Aesthetic Guardian”,
+short: “AG”,
+color: “#F59E0B”,
+mbti: “ISFP”,
+enneagram: “4w3 or 9w8”,
+summary: “You process the world through sensory-material engagement — texture, color, sound, movement. Your values run deep and express themselves through craft and embodied creation.”,
+architecture: “Your mind combines high sensory openness with deep values and a strong orientation toward physical, material expression. You don’t think about beauty — you feel it in your body. Your response to aesthetic violations is visceral, not intellectual. You know what’s right by how it feels in your hands.”,
+lived: “You’re probably the person who can’t walk past a poorly designed space without feeling it as physical discomfort, who chooses materials by touch as much as appearance, who knows whether something is ‘right’ before you can explain why. Your creative process is deeply embodied — you think through making, not before making. The medium isn’t a vehicle for an idea; it’s a partner in discovering the idea.”,
+strengths: “You have an extraordinary sensitivity to quality, harmony, and authenticity in the physical world. Your craft, when developed, carries a level of integrity that purely conceptual thinkers can’t achieve. You’re also a natural guardian of standards — you hold the line on quality when others are willing to compromise.”,
+daytoday: “The cost is that ugly, careless, or inauthentic environments impose a steady tax on your functioning. You may struggle to articulate why something matters when others can’t feel it. And you may find yourself in tension between your deep aesthetic standards and the practical compromises that daily life demands.”,
+},
+empathic_synthesizer: {
+name: “Empathic Synthesizer”,
+short: “ES”,
+color: “#10B981”,
+mbti: “INFJ”,
+enneagram: “2w1 or 4w5”,
+summary: “You understand people through convergent knowing — suddenly ‘seeing’ the deep pattern underneath their behavior, knowing what they need before they do.”,
+architecture: “Your mind combines high emotional openness with rich inner simulation, oriented toward understanding people at a level that goes beyond what they’ve told you. Your insights about others arrive as whole patterns — you don’t reason your way to understanding someone; you suddenly see them.”,
+lived: “You’ve probably had the experience of knowing something about someone — their real motivation, their hidden pain, what they actually need — long before they’ve said it, and sometimes before they know it themselves. This can feel like intuition, but it’s actually high-speed pattern recognition operating on emotional data. You’re reading micro-expressions, vocal tone, word choice, and behavioral patterns simultaneously, and your mind synthesizes them into a coherent picture below conscious awareness.”,
+strengths: “You’re exceptionally good at understanding what people actually need (as opposed to what they say they need), at seeing the emotional dynamics underneath social situations, and at providing support that hits precisely where it’s needed. In any context requiring deep human understanding — counseling, teaching, leadership, creative work about people — your insight is rare and valuable.”,
+daytoday: “The cost is that you can’t turn it off. You’re absorbing emotional data from everyone around you, all the time, and this creates a significant energy drain — especially in group settings. You may also struggle with the gap between what you see and what you can say: telling someone you understand their hidden pain before they’ve acknowledged it rarely goes well. And you may find yourself knowing things about people that you wish you didn’t.”,
+},
+empathic_orchestrator: {
+name: “Empathic Orchestrator”,
+short: “EO”,
+color: “#14B8A6”,
+mbti: “ENFJ / ESFJ”,
+enneagram: “2w3 or 3w2”,
+summary: “You process the social world through distributed attunement — tracking the whole room, sensing the relational field, adjusting in real time to what the group needs.”,
+architecture: “Your mind is optimized for real-time social processing. You’re not reading one person deeply — you’re tracking the entire relational field simultaneously, sensing shifts in group dynamics, and adjusting your own behavior to maintain harmony or drive toward a collective goal.”,
+lived: “In a room full of people, you’re the one who notices when someone feels left out, when two people are in silent conflict, when the energy needs to shift. You do this automatically, without effort — it’s your default mode of attention. You’re probably the person others describe as ‘the glue’ or ‘the one who holds everything together,’ and you may not fully appreciate how unusual this distributed social awareness actually is.”,
+strengths: “You excel at facilitation, team leadership, event orchestration, and any context where the goal is to get a group of people aligned and functioning well together. Your ability to read and respond to group dynamics in real time is a genuine skill that most people lack entirely.”,
+daytoday: “The cost is that you may lose track of your own needs while attending to everyone else’s. You can exhaust yourself maintaining group harmony without realizing you’ve given away all your energy. You may also struggle in situations that demand deep solitary analysis — your processing is oriented toward the social field, and cutting yourself off from it can feel like going blind.”,
+},
+divergent_catalyst: {
+name: “Divergent Catalyst”,
+short: “DC”,
+color: “#F97316”,
+mbti: “ENTP / ENFP”,
+enneagram: “7w6 or 3w4”,
+summary: “You understand people and ideas through dialogue — testing, probing, exploring interactively. Your mind is energized by the unexpected and pattern-breaking.”,
+architecture: “Your mind combines novelty-seeking with social engagement. You build understanding through interaction rather than solitary reflection. Your thinking is dialogic — you need to talk through ideas, bounce them off others, and see how they respond in order to know what you actually think.”,
+lived: “You’re probably the person who walks into a conversation with one opinion and walks out with a different one — not because you were persuaded, but because the conversation itself was your thinking process. You’re drawn to people who push back, to ideas that don’t fit, to the moment when something unexpected shifts your entire frame. Predictable conversations bore you; genuine intellectual friction energizes you.”,
+strengths: “You excel at catalyzing change, challenging assumptions, finding creative solutions through dialogue, and energizing groups with new possibilities. Your comfort with intellectual conflict and your ability to hold multiple perspectives simultaneously makes you valuable in any context that’s stuck or stagnant.”,
+daytoday: “The cost is that you may struggle with solitary, sustained work that doesn’t involve interaction. You may also frustrate people who want consistency — your ideas genuinely evolve through dialogue, which can look like inconsistency from the outside. And you may sometimes mistake the excitement of a new idea for the value of a good idea.”,
+},
+sensory_kinetic: {
+name: “Sensory-Kinetic Processor”,
+short: “SK”,
+color: “#EF4444”,
+mbti: “ESTP / ISTP”,
+enneagram: “7w8 or 8w7”,
+summary: “You process the world primarily through real-time sensory engagement — reading situations fast, responding in the moment, thinking by doing rather than reflecting.”,
+architecture: “Your mind is optimized for present-tense processing. You have high sensory openness — you take in a lot of information from your environment — but rather than routing it through extensive internal simulation, you process it in real time and respond. Your thinking happens through action, not before action.”,
+lived: “You’re probably the person who learns by doing rather than studying, who reads a room faster than you can explain how, who makes decisions on the fly with a confidence that puzzles more deliberate thinkers. You may find it genuinely difficult to explain your decision-making process because it happens so fast and so automatically that there’s nothing to narrate.”,
+strengths: “You excel in dynamic, high-stakes environments that reward quick reading and fast response — crisis management, performance, negotiation, physical skill, troubleshooting. Your ability to process real-time sensory data and act on it without the overhead of deliberation is a genuine cognitive advantage in the right contexts.”,
+daytoday: “The cost is that environments requiring slow, reflective analysis may feel like trying to run through water. You may struggle with tasks that demand extended abstract thinking without concrete referents, and others may underestimate your intelligence because your processing style doesn’t look like what they expect ‘smart’ to look like.”,
+},
+embodied_pragmatist: {
+name: “Embodied Pragmatist”,
+short: “EP”,
+color: “#78716C”,
+mbti: “ISTJ / ESTJ”,
+enneagram: “6w5 or 1w2”,
+summary: “You process the world through concrete, verified experience — trusting what’s been tested, keeping systems running, preferring practical action over abstract speculation.”,
+architecture: “Your mind is optimized for reliability. You have relatively filtered sensory gating — not every stimulus demands your attention — and your internal processing is oriented toward proven models rather than speculative simulation. You think in terms of what works, what’s been tested, what can be depended on.”,
+lived: “You’re probably the person others rely on to actually get things done — to remember the details, maintain the systems, follow through on commitments. You may find it frustrating when others want to theorize about possibilities when there’s a perfectly good established approach available. Your skepticism toward untested ideas isn’t closed-mindedness; it’s a legitimate cognitive preference for verified information.”,
+strengths: “You excel at execution, maintenance, quality control, and any context where reliability matters more than novelty. Your ability to build and maintain systems that actually work — day after day, without drama — is a foundational capability that more flashy processing styles depend on.”,
+daytoday: “The cost is that environments demanding rapid conceptual innovation or comfort with ambiguity may feel genuinely stressful. You may also be undervalued in cultures that prize ‘disruption’ over ‘dependability,’ even though dependability is far rarer and far more valuable than most people realize.”,
+},
+systematic_commander: {
+name: “Systematic Commander”,
+short: “SC”,
+color: “#DC2626”,
+mbti: “ENTJ / ESTJ”,
+enneagram: “8w9 or 3w4”,
+summary: “You process the world through decisive structural analysis — seeing what needs to happen and making it happen.”,
+architecture: “Your mind combines strong analytical capacity with action orientation and relatively low internal simulation overhead. You don’t get lost in possibilities — you assess the situation, identify the optimal path, and execute. Your processing is efficient: minimal rumination, maximum clarity.”,
+lived: “You’re probably the person who, in any group, naturally sees what needs to be done and starts organizing people to do it. You may find it genuinely puzzling when others agonize over decisions that seem clear to you, or when they want to discuss feelings about a situation that has an obvious structural solution. Your directness isn’t aggression — it’s efficiency.”,
+strengths: “You excel at leadership, project management, strategic execution, and any context that requires turning analysis into action quickly. Your ability to cut through ambiguity and make decisions with incomplete information is genuinely rare and valuable.”,
+daytoday: “The cost is that you may miss emotional dynamics that matter, dismiss perspectives that don’t fit your framework, or push too hard when patience would serve better. Environments that require extensive collaboration, emotional processing, or comfort with ambiguity may feel inefficient to you in ways that create friction with others.”,
+},
+principled_analyst: {
+name: “Principled Analyst”,
+short: “PA”,
+color: “#4B5563”,
+mbti: “ISTJ / INTJ”,
+enneagram: “1w9 or 5w6”,
+summary: “You process the world through internal standards and careful analysis — maintaining strong frameworks for how things should be while methodically working through complexity.”,
+architecture: “Your mind combines analytical capacity with a deep internal standards system. You don’t just analyze — you evaluate. There’s always a reference point: how things should work, what quality looks like, where the standard is. Your processing is methodical, principled, and oriented toward correctness.”,
+lived: “You’re probably the person who notices when something is done wrong before you notice when it’s done right. You have strong opinions about quality and process, and you hold yourself to the same standards you apply to others — often harder. You may find it difficult to let something go that you know could be better, even when ‘good enough’ is what the situation calls for.”,
+strengths: “You excel at quality assurance, standards-setting, careful analysis, and any context where getting it right matters more than getting it fast. Your internal standards system, while sometimes costly, produces work that others can depend on completely.”,
+daytoday: “The cost is a persistent inner critic that can make it hard to start things (because they won’t be perfect) or finish things (because they could still be better). You may also struggle in environments that reward speed and improvisation over care and precision, and you may find it draining to work with people who don’t share your standards.”,
+},
+adaptive_harmonizer: {
+name: “Adaptive Harmonizer”,
+short: “AH”,
+color: “#84CC16”,
+mbti: “ESFJ / ISFJ”,
+enneagram: “9w1 or 2w1”,
+summary: “You process the world through social attunement and practical responsiveness — reading what situations need and adapting fluidly.”,
+architecture: “Your mind is optimized for social intelligence and contextual flexibility. You read environments quickly, understand what’s needed, and adjust your approach to fit. Your processing is moderate across most dimensions — not extreme in any direction — which gives you unusual adaptability.”,
+lived: “You’re probably the person who can fit into almost any social context, who people describe as ‘easy to be around,’ who smooths out group friction without anyone noticing you’re doing it. Your adaptability isn’t superficiality — it’s a genuine processing style that prioritizes harmony and practical responsiveness over self-expression or analysis.”,
+strengths: “You excel at mediation, customer-facing roles, team support, and any context where reading a room and responding appropriately matters more than imposing your own vision. Your adaptability is a genuine cognitive strength that allows you to function well across diverse environments.”,
+daytoday: “The cost is that you may lose track of your own preferences and needs in the process of adapting to others. You may struggle to assert strong positions, and environments that demand confrontation or independent creative vision may feel uncomfortable. The question ‘what do YOU want?’ may be genuinely harder for you to answer than it seems like it should be.”,
+},
+};
+
+// ─── LAYER DEFINITIONS ───
+const LAYER1_ITEMS = [
+{ id: 1, text: “I notice small details in my environment that others seem to miss.”, reverse: false },
+{ id: 2, text: “Art, music, or nature can completely stop me in my tracks.”, reverse: false },
+{ id: 3, text: “I am easily affected by the mood of a room when I walk in.”, reverse: false },
+{ id: 4, text: “I experience my emotions with a lot of intensity.”, reverse: false },
+{ id: 5, text: “I am sensitive to sensory details — lighting, textures, sounds, smells.”, reverse: false },
+{ id: 6, text: “I can be so absorbed in an experience that I lose track of time and place.”, reverse: false },
+{ id: 7, text: “Harsh or ugly environments bother me more than they seem to bother most people.”, reverse: false },
+{ id: 8, text: “I rarely notice subtle changes in my surroundings.”, reverse: true },
+{ id: 9, text: “I am generally not very affected by other people’s moods.”, reverse: true },
+];
+
+const LAYER2_ITEMS = [
+{ id: 10, text: “I often get lost in my own thoughts, even when I should be paying attention to something else.”, reverse: false },
+{ id: 11, text: “I have a rich inner life — vivid daydreams, imagined conversations, or complex mental simulations.”, reverse: false },
+{ id: 12, text: “I frequently replay past experiences or rehearse future scenarios in my mind.”, reverse: false },
+{ id: 13, text: “When I have free time with nothing to do, my mind fills up with ideas, images, or stories on its own.”, reverse: false },
+{ id: 14, text: “I tend to process experiences internally for a long time before I feel "done" with them.”, reverse: false },
+{ id: 15, text: “My mind rarely wanders — I tend to stay focused on what’s in front of me.”, reverse: true },
+{ id: 16, text: “I don’t spend much time in my own head — I’m more oriented to what’s happening around me.”, reverse: true },
+];
+
+const LAYER3_ITEMS = [
+{ id: 17, text: “I enjoy analyzing complex problems and figuring out how things work.”, reverse: false },
+{ id: 18, text: “I naturally organize information into categories, frameworks, or systems.”, reverse: false },
+{ id: 19, text: “I think things through carefully before making decisions.”, reverse: false },
+{ id: 20, text: “I enjoy abstract or theoretical thinking.”, reverse: false },
+{ id: 21, text: “When faced with a complex situation, I instinctively look for the underlying structure.”, reverse: false },
+{ id: 22, text: “I find detailed analysis tedious — I’d rather go with my instincts.”, reverse: true },
+{ id: 23, text: “I handle complex tasks efficiently — I can hold many variables in mind at once.”, reverse: false },
+];
+
+const LAYER6_SALIENCE = [
+{ id: 24, text: “I feel other people’s pain almost as if it were my own.”, facet: “emotional”, reverse: false },
+{ id: 25, text: “I can usually sense how someone is feeling before they tell me.”, facet: “emotional”, reverse: false },
+{ id: 26, text: “I am more moved by a person’s story than by an elegant proof or theory.”, facet: “emotional”, reverse: false },
+{ id: 27, text: “I notice structural patterns, logical gaps, or systemic inefficiencies before I notice emotional dynamics.”, facet: “structural”, reverse: false },
+{ id: 28, text: “When something is logically inconsistent, it bothers me even if everyone else seems fine with it.”, facet: “structural”, reverse: false },
+];
+
+const LAYER6_REWARD = [
+{ id: 29, text: “Nothing energizes me like finally understanding something deeply — the moment a complex pattern clicks into place.”, facet: “epistemic”, reverse: false },
+{ id: 30, text: “I feel most alive in moments of genuine connection — when someone truly understands me or I truly understand them.”, facet: “social”, reverse: false },
+{ id: 31, text: “Creating something beautiful or meaningful is its own reward — I don’t need external validation for it.”, facet: “aesthetic”, reverse: false },
+{ id: 32, text: “I love the feeling of performing at my peak — handling complexity in real time with complete competence.”, facet: “mastery”, reverse: false },
+{ id: 33, text: “Social gatherings energize me — I feel fueled by being around people.”, facet: “social_e”, reverse: false },
+{ id: 34, text: “I prefer spending my free time learning or exploring ideas over socializing.”, facet: “epistemic”, reverse: false },
+];
+
+// ─── SCORING HELPERS ───
+function scoreLikert(items, answers) {
+let sum = 0, count = 0;
+items.forEach(item => {
+const val = answers[item.id];
+if (val != null) {
+sum += item.reverse ? (6 - val) : val;
+count++;
+}
+});
+return count > 0 ? sum / count : 0;
+}
+
+function classifyScore(score) {
+if (score >= 3.8) return “high”;
+if (score >= 2.5) return “moderate”;
+return “low”;
+}
+
+// ─── REUSABLE BUTTON STYLE ───
+const btnStyle = {
+padding: “12px 36px”, background: “linear-gradient(135deg, #6366F1, #8B5CF6)”,
+border: “none”, borderRadius: 10, color: “#fff”, fontFamily: “‘DM Sans’, sans-serif”,
+fontSize: 14, fontWeight: 600, cursor: “pointer”, letterSpacing: “0.02em”,
+boxShadow: “0 4px 20px rgba(99, 102, 241, 0.25)”, transition: “all 0.2s ease”,
+};
+
+// ─── COMPONENTS ───
+
+function ProgressBar({ current, total, label }) {
+const pct = Math.min(100, Math.round((current / total) * 100));
+return (
+<div style={{ marginBottom: 32 }}>
+<div style={{ display: “flex”, justifyContent: “space-between”, marginBottom: 6, fontFamily: “‘DM Sans’, sans-serif”, fontSize: 13, color: “#94A3B8”, letterSpacing: “0.05em” }}>
+<span>{label}</span>
+<span>{pct}%</span>
+</div>
+<div style={{ height: 3, background: “#1E293B”, borderRadius: 2, overflow: “hidden” }}>
+<div style={{ height: “100%”, width: `${pct}%`, background: “linear-gradient(90deg, #6366F1, #A78BFA)”, borderRadius: 2, transition: “width 0.6s cubic-bezier(0.16, 1, 0.3, 1)” }} />
+</div>
+</div>
+);
+}
+
+function LikertScale({ item, value, onChange }) {
+const labels = [“Strongly Disagree”, “Disagree”, “Neutral”, “Agree”, “Strongly Agree”];
+return (
+<div style={{ marginBottom: 28, animation: “fadeUp 0.4s ease-out both” }}>
+<p style={{ fontFamily: “‘Newsreader’, serif”, fontSize: 17, lineHeight: 1.6, color: “#E2E8F0”, marginBottom: 14 }}>
+{item.text}
+</p>
+<div style={{ display: “flex”, gap: 8, flexWrap: “wrap” }}>
+{[1,2,3,4,5].map(n => (
+<button
+key={n}
+onClick={() => onChange(item.id, n)}
+style={{
+flex: “1 1 0”, minWidth: 54, padding: “10px 4px”,
+border: value === n ? “1.5px solid #A78BFA” : “1.5px solid #334155”,
+borderRadius: 8,
+background: value === n ? “rgba(167, 139, 250, 0.12)” : “rgba(30, 41, 59, 0.5)”,
+color: value === n ? “#C4B5FD” : “#94A3B8”,
+fontFamily: “‘DM Sans’, sans-serif”, fontSize: 11,
+cursor: “pointer”, transition: “all 0.2s ease”, textAlign: “center”, lineHeight: 1.3,
+}}
+>
+<div style={{ fontSize: 16, fontWeight: 600, marginBottom: 2 }}>{n}</div>
+{labels[n-1]}
+</button>
+))}
+</div>
+</div>
+);
+}
+
+function ChoiceQuestion({ question, options, value, onChange, multi = false, starred = null, onStar = null }) {
+return (
+<div style={{ marginBottom: 28, animation: “fadeUp 0.4s ease-out both” }}>
+<p style={{ fontFamily: “‘Newsreader’, serif”, fontSize: 17, lineHeight: 1.6, color: “#E2E8F0”, marginBottom: 16 }}>
+{question}
+</p>
+<div style={{ display: “flex”, flexDirection: “column”, gap: 10 }}>
+{options.map((opt) => {
+const isSelected = multi ? (value || []).includes(opt.key) : value === opt.key;
+return (
+<button
+key={opt.key}
+onClick={() => {
+if (multi) {
+const cur = value || [];
+onChange(cur.includes(opt.key) ? cur.filter(k => k !== opt.key) : […cur, opt.key]);
+} else {
+onChange(opt.key);
+}
+}}
+style={{
+display: “flex”, alignItems: “flex-start”, gap: 12,
+padding: “14px 16px”,
+border: isSelected ? “1.5px solid #A78BFA” : “1.5px solid #334155”,
+borderRadius: 10,
+background: isSelected ? “rgba(167, 139, 250, 0.08)” : “rgba(15, 23, 42, 0.6)”,
+color: “#E2E8F0”, fontFamily: “‘DM Sans’, sans-serif”,
+fontSize: 14, lineHeight: 1.5, cursor: “pointer”,
+transition: “all 0.2s ease”, textAlign: “left”, position: “relative”,
+}}
+>
+<span style={{
+minWidth: 20, height: 20, borderRadius: multi ? 4 : 10,
+border: isSelected ? “2px solid #A78BFA” : “2px solid #475569”,
+background: isSelected ? “#A78BFA” : “transparent”,
+display: “flex”, alignItems: “center”, justifyContent: “center”,
+marginTop: 2, flexShrink: 0, transition: “all 0.2s ease”,
+}}>
+{isSelected && <span style={{ color: “#0F172A”, fontSize: 12, fontWeight: 700 }}>✓</span>}
+</span>
+<div style={{ flex: 1 }}>
+{opt.label && <span style={{ fontWeight: 600, color: “#C4B5FD” }}>{opt.label} </span>}
+<span style={{ color: “#CBD5E1” }}>{opt.text}</span>
+</div>
+{multi && isSelected && onStar && (
+<button
+onClick={(e) => { e.stopPropagation(); onStar(opt.key); }}
+style={{
+background: starred === opt.key ? “#FBBF24” : “transparent”,
+border: starred === opt.key ? “1.5px solid #FBBF24” : “1.5px solid #475569”,
+borderRadius: 6, padding: “2px 8px”, fontSize: 14, cursor: “pointer”,
+color: starred === opt.key ? “#0F172A” : “#94A3B8”,
+transition: “all 0.2s ease”, flexShrink: 0,
+}}
+title=“Mark as primary (★)”
+>★</button>
+)}
+</button>
+);
+})}
+</div>
+{multi && onStar && <p style={{ fontSize: 12, color: “#64748B”, marginTop: 8, fontFamily: “‘DM Sans’, sans-serif” }}>Select all that apply, then click ★ on whichever feels most like home base.</p>}
+</div>
+);
+}
+
+function DimensionBar({ label, value, max = 5, color = “#A78BFA” }) {
+const pct = Math.round((value / max) * 100);
+return (
+<div style={{ marginBottom: 14 }}>
+<div style={{ display: “flex”, justifyContent: “space-between”, marginBottom: 4, fontFamily: “‘DM Sans’, sans-serif”, fontSize: 13 }}>
+<span style={{ color: “#CBD5E1” }}>{label}</span>
+<span style={{ color: “#94A3B8” }}>{value.toFixed(1)}</span>
+</div>
+<div style={{ height: 8, background: “#1E293B”, borderRadius: 4, overflow: “hidden” }}>
+<div style={{ height: “100%”, width: `${pct}%`, background: color, borderRadius: 4, transition: “width 1s cubic-bezier(0.16, 1, 0.3, 1)” }} />
+</div>
+</div>
+);
+}
+
+function SectionCard({ title, children }) {
+return (
+<div style={{ background: “rgba(15, 23, 42, 0.6)”, border: “1px solid #1E293B”, borderRadius: 14, padding: 24, marginBottom: 28 }}>
+<h3 style={{ fontFamily: “‘DM Sans’, sans-serif”, fontSize: 12, fontWeight: 600, color: “#64748B”, letterSpacing: “0.1em”, textTransform: “uppercase”, marginBottom: 16 }}>{title}</h3>
+{children}
+</div>
+);
+}
+
+function ProfileParagraph({ children }) {
+return <p style={{ fontFamily: “‘Newsreader’, serif”, fontSize: 16, lineHeight: 1.75, color: “#CBD5E1”, marginBottom: 14 }}>{children}</p>;
+}
+
+// ─── MAIN APP ───
+function NeuralProcessingQuiz() {
+const [phase, setPhase] = useState(“intro”);
+const [answers, setAnswers] = useState({});
+const [choiceAnswers, setChoiceAnswers] = useState({});
+const [starred, setStarred] = useState({});
+const [tags, setTags] = useState([]);
+const [resultProfile, setResultProfile] = useState(null);
+const [scores, setScores] = useState({});
+const [fadeIn, setFadeIn] = useState(true);
+const [layer4aFinalized, setLayer4aFinalized] = useState(false);
+const [showTypology, setShowTypology] = useState(false);
+const containerRef = useRef(null);
+
+const addTag = useCallback((tag) => setTags(prev => prev.includes(tag) ? prev : […prev, tag]), []);
+
+const transition = useCallback((nextPhase) => {
+setFadeIn(false);
+setTimeout(() => {
+setPhase(nextPhase);
+setFadeIn(true);
+if (containerRef.current) containerRef.current.scrollTo({ top: 0, behavior: “smooth” });
+}, 300);
+}, []);
+
+const setAnswer = useCallback((id, val) => {
+setAnswers(prev => ({ …prev, [id]: val }));
+}, []);
+
+const setChoice = useCallback((key, val) => {
+setChoiceAnswers(prev => ({ …prev, [key]: val }));
+}, []);
+
+const setStarVal = useCallback((key, val) => {
+setStarred(prev => ({ …prev, [key]: val }));
+}, []);
+
+// Scoring
+const gatingScore = useMemo(() => scoreLikert(LAYER1_ITEMS, answers), [answers]);
+const dmnScore = useMemo(() => scoreLikert(LAYER2_ITEMS, answers), [answers]);
+const ecnScore = useMemo(() => scoreLikert(LAYER3_ITEMS, answers), [answers]);
+const emotionalSalience = useMemo(() => {
+const items = LAYER6_SALIENCE.filter(i => i.facet === “emotional”);
+return scoreLikert(items, answers);
+}, [answers]);
+const structuralSalience = useMemo(() => {
+const items = LAYER6_SALIENCE.filter(i => i.facet === “structural”);
+return scoreLikert(items, answers);
+}, [answers]);
+
+const gatingLevel = classifyScore(gatingScore);
+const dmnLevel = classifyScore(dmnScore);
+const ecnLevel = classifyScore(ecnScore);
+
+// Branch logic
+const getLayer2Branch = useCallback(() => {
+if (gatingLevel === “high” && dmnLevel === “low”) return “shortcutA”;
+if (gatingLevel === “low” && dmnLevel === “low”) return “shortcutB”;
+return “layer3”;
+}, [gatingLevel, dmnLevel]);
+
+const getLayer3Branch = useCallback(() => {
+if (gatingLevel === “high” && dmnLevel === “high”) {
+if (ecnLevel === “high”) return “layer4”;
+if (ecnLevel === “moderate”) return “layer5a”;
+return “layer5b”;
+}
+if (gatingLevel === “high” && dmnLevel === “moderate”) {
+if (ecnLevel === “high”) return “layer4”;
+return “layer5a”;
+}
+if (gatingLevel === “moderate” && dmnLevel === “high”) {
+if (ecnLevel === “high”) return “layer4”;
+return “layer6”;
+}
+if (gatingLevel === “low” && dmnLevel === “high”) return “layer4”;
+return “layer6”;
+}, [gatingLevel, dmnLevel, ecnLevel]);
+
+// Profile determination
+const determineProfile = useCallback(() => {
+const c = choiceAnswers;
+if (c[“4b”] === “a” || c[“4b”] === “c”) return “analytical_explorer”;
+if (c[“4b”] === “b”) {
+if (c[“4c”] === “d”) return “analytical_explorer”;
+return “convergent_architect”;
+}
+if (c[“4b”] === “d”) {
+if (c[“4c”] === “a” || c[“4c”] === “b”) return “ae_ca_hybrid”;
+if (c[“4c”] === “c” || c[“4c”] === “d”) return “analytical_explorer”;
+return “ae_ca_hybrid”;
+}
+if (c[“5a2”] === “a”) return “empathic_synthesizer”;
+if (c[“5a2”] === “b”) return “empathic_orchestrator”;
+if (c[“5a2”] === “c”) return “divergent_catalyst”;
+if (c[“5a1”] === “d”) return “divergent_catalyst”;
+if (c[“5a1”] === “b”) return “divergent_catalyst”;
+if (c[“5b1”] === “a”) return “immersive_explorer”;
+if (c[“5b1”] === “b”) return “aesthetic_guardian”;
+if (c[“5b2”] === “a”) return “immersive_explorer”;
+if (c[“5b2”] === “b”) return “aesthetic_guardian”;
+if (c[“5b2”] === “c”) return “principled_analyst”;
+if (c[“shortcutA”] === “a”) return “sensory_kinetic”;
+if (c[“shortcutB”] === “a”) return “embodied_pragmatist”;
+// Fallbacks
+if (gatingLevel === “moderate” && dmnLevel === “low”) {
+return ecnLevel === “high” ? “systematic_commander” : “embodied_pragmatist”;
+}
+if (gatingLevel === “low” && dmnLevel === “moderate”) {
+return ecnLevel === “high” ? “principled_analyst” : “adaptive_harmonizer”;
+}
+if (gatingLevel === “moderate” && dmnLevel === “moderate”) {
+if (ecnLevel === “high”) return “principled_analyst”;
+return emotionalSalience > structuralSalience ? “adaptive_harmonizer” : “systematic_commander”;
+}
+if (ecnLevel === “high”) return “analytical_explorer”;
+if (emotionalSalience > structuralSalience) return “empathic_synthesizer”;
+return “convergent_architect”;
+}, [choiceAnswers, gatingLevel, dmnLevel, ecnLevel, emotionalSalience, structuralSalience]);
+
+const computeRewardPathway = useCallback(() => {
+const epistemic = ((answers[29] || 3) + (answers[34] || 3)) / 2;
+const social = ((answers[30] || 3) + (answers[33] || 3)) / 2;
+const aesthetic = answers[31] || 3;
+const mastery = answers[32] || 3;
+const pathways = { epistemic, social, aesthetic, mastery };
+const sorted = Object.entries(pathways).sort((a,b) => b[1] - a[1]);
+const primary = sorted[0];
+const secondary = sorted[1];
+const dual = Math.abs(primary[1] - secondary[1]) <= 0.5;
+return { pathways, primary: primary[0], secondary: secondary[0], dual };
+}, [answers]);
+
+const generateResults = useCallback(() => {
+const profileKey = determineProfile();
+const profile = PROFILES[profileKey];
+const reward = computeRewardPathway();
+const salienceType = emotionalSalience > structuralSalience + 1 ? “Emotional bias” :
+structuralSalience > emotionalSalience + 1 ? “Structural bias” :
+(emotionalSalience > 3.5 && structuralSalience > 3.5) ? “Dual salience” : “Balanced”;
+
+```
+setScores({ gating: gatingScore, dmn: dmnScore, ecn: ecnScore, emotionalSalience, structuralSalience, reward, salienceType });
+setResultProfile({ key: profileKey, ...profile });
+transition("results");
+```
+
+}, [determineProfile, computeRewardPathway, gatingScore, dmnScore, ecnScore, emotionalSalience, structuralSalience, transition]);
+
+// ─── RENDER PHASES ───
+
+const renderIntro = () => (
+<div style={{ textAlign: “center”, maxWidth: 540, margin: “0 auto” }}>
+<div style={{ fontSize: 48, marginBottom: 16, letterSpacing: “-0.03em”, fontFamily: “‘Newsreader’, serif”, color: “#E2E8F0”, fontWeight: 300 }}>
+Neural Processing Profile
+</div>
+<div style={{ width: 60, height: 1, background: “linear-gradient(90deg, transparent, #A78BFA, transparent)”, margin: “0 auto 24px” }} />
+<p style={{ fontFamily: “‘DM Sans’, sans-serif”, fontSize: 15, lineHeight: 1.7, color: “#94A3B8”, marginBottom: 12 }}>
+This assessment maps how you take in information, what you do with it internally, and where your energy goes — across six dimensions of cognitive processing.
+</p>
+<p style={{ fontFamily: “‘DM Sans’, sans-serif”, fontSize: 14, lineHeight: 1.7, color: “#64748B”, marginBottom: 32 }}>
+The quiz adapts as you go — your answers determine which questions appear next. There are no right or wrong answers. Most people finish in 5–8 minutes.
+</p>
+<button
+onClick={() => transition(“layer1”)}
+style={{
+padding: “14px 48px”, background: “linear-gradient(135deg, #6366F1, #8B5CF6)”,
+border: “none”, borderRadius: 10, color: “#fff”, fontFamily: “‘DM Sans’, sans-serif”,
+fontSize: 15, fontWeight: 600, cursor: “pointer”, letterSpacing: “0.02em”,
+transition: “transform 0.2s ease, box-shadow 0.2s ease”,
+boxShadow: “0 4px 24px rgba(99, 102, 241, 0.3)”,
+}}
+>
+Begin Assessment
+</button>
+</div>
+);
+
+const renderLikertLayer = (items, layerLabel, subtitle, totalProgress, onNext) => {
+const allDone = items.every(i => answers[i.id] != null);
+const answered = items.filter(i => answers[i.id] != null).length;
+return (
+<div>
+<ProgressBar current={totalProgress + answered} total={38} label={layerLabel} />
+<h2 style={{ fontFamily: “‘Newsreader’, serif”, fontSize: 24, color: “#E2E8F0”, marginBottom: 6, fontWeight: 400 }}>{layerLabel}</h2>
+<p style={{ fontFamily: “‘DM Sans’, sans-serif”, fontSize: 13, color: “#64748B”, marginBottom: 24, lineHeight: 1.5 }}>{subtitle}</p>
+{items.map(item => (
+<LikertScale key={item.id} item={item} value={answers[item.id]} onChange={setAnswer} />
+))}
+{allDone && (
+<div style={{ textAlign: “right”, marginTop: 8 }}>
+<button onClick={onNext} style={btnStyle}>Continue →</button>
+</div>
+)}
+</div>
+);
+};
+
+const renderShortcutA = () => (
+<div>
+<ProgressBar current={16} total={38} label="Quick Check" />
+<ChoiceQuestion
+question=“You seem to process the world primarily through real-time engagement — reading situations fast, responding in the moment, thinking by doing rather than reflecting. Does this sound like you?”
+options={[
+{ key: “a”, label: “Yes —”, text: “I live in the present tense. I read and respond faster than I reflect.” },
+{ key: “b”, label: “Partially —”, text: “I am action-oriented but I also have a strong analytical side.” },
+{ key: “c”, label: “Not really —”, text: “I think more than that description suggests.” },
+]}
+value={choiceAnswers[“shortcutA”]}
+onChange={(v) => setChoice(“shortcutA”, v)}
+/>
+{choiceAnswers[“shortcutA”] && (
+<div style={{ textAlign: “right”, marginTop: 8 }}>
+<button onClick={() => {
+if (choiceAnswers[“shortcutA”] === “a”) { addTag(“sensory_kinetic_confirmed”); transition(“layer6”); }
+else transition(“layer3”);
+}} style={btnStyle}>Continue →</button>
+</div>
+)}
+</div>
+);
+
+const renderShortcutB = () => (
+<div>
+<ProgressBar current={16} total={38} label="Quick Check" />
+<ChoiceQuestion
+question=“You seem to process the world through concrete, verified experience — trusting what’s been tested, keeping systems running, preferring practical action over abstract speculation. Does this sound like you?”
+options={[
+{ key: “a”, label: “Yes —”, text: “I trust experience, value reliability, and prefer proven approaches.” },
+{ key: “b”, label: “Partially —”, text: “I’m practical but I also have a strong internal standards system.” },
+{ key: “c”, label: “Not really.”, text: “” },
+]}
+value={choiceAnswers[“shortcutB”]}
+onChange={(v) => setChoice(“shortcutB”, v)}
+/>
+{choiceAnswers[“shortcutB”] && (
+<div style={{ textAlign: “right”, marginTop: 8 }}>
+<button onClick={() => {
+if (choiceAnswers[“shortcutB”] === “a”) { addTag(“embodied_pragmatist_confirmed”); transition(“layer6”); }
+else transition(“layer3”);
+}} style={btnStyle}>Continue →</button>
+</div>
+)}
+</div>
+);
+
+const renderLayer4 = () => {
+// FIX: Use finalized flag for Q4A instead of checking truthiness of the array
+const step = !layer4aFinalized ? “4a” : !choiceAnswers[“4b”] ? “4b” : (choiceAnswers[“4b”] === “d” || choiceAnswers[“4b”] === “b”) && !choiceAnswers[“4c”] ? “4c” : “done”;
+const q4aSelections = choiceAnswers[“4a”] || [];
+const q4aReady = q4aSelections.length > 0 && starred[“4a”];
+
+```
+return (
+  <div>
+    <ProgressBar current={24} total={38} label="How Imagination and Analysis Work Together" />
+    <h2 style={{ fontFamily: "'Newsreader', serif", fontSize: 24, color: "#E2E8F0", marginBottom: 6, fontWeight: 400 }}>Creative & Intellectual Process</h2>
+    <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "#64748B", marginBottom: 24, lineHeight: 1.5 }}>
+      These questions explore what happens internally when you're doing your best thinking.
+    </p>
+    {step === "4a" && (
+      <>
+        <ChoiceQuestion
+          question="When you're doing your best creative or intellectual work, which of these describe your internal experience?"
+          multi={true}
+          options={[
+            { key: "gen_critique", label: "Generating and evaluating at the same time —", text: "I'm producing ideas and testing them in the same breath. I don't need to switch modes." },
+            { key: "convergent_aha", label: "A sudden click —", text: "disparate things suddenly fall into a unified pattern. The insight arrives whole, and then I examine it." },
+            { key: "immersion_first", label: "Full immersion first, judgment later —", text: "I need to be in the flow before I can evaluate what I've produced." },
+            { key: "structured_exec", label: "Focused building —", text: "I know what I want to create and I'm concentrated on executing it precisely." },
+          ]}
+          value={choiceAnswers["4a"]}
+          onChange={(v) => setChoice("4a", v)}
+          starred={starred["4a"]}
+          onStar={(v) => setStarVal("4a", v)}
+        />
+        {q4aReady && (
+          <div style={{ textAlign: "right" }}>
+            <button onClick={() => {
+              const sel = choiceAnswers["4a"] || [];
+              if (sel.includes("gen_critique") && sel.includes("convergent_aha")) addTag("high_coupling");
+              if (sel.length >= 3) addTag("broad_resonance");
+              setLayer4aFinalized(true);
+            }} style={btnStyle}>Continue →</button>
+          </div>
+        )}
+      </>
+    )}
+    {step === "4b" && (
+      <>
+        <ChoiceQuestion
+          question="When you're exploring something that interests you intellectually, where does the energy concentrate? Which part feels most like your natural mode?"
+          options={[
+            { key: "a", label: "Branching outward —", text: "every idea spawns three more. The branching itself is the thrill." },
+            { key: "b", label: "Driving inward —", text: "I'm looking for the one deep pattern underneath everything. The payoff is when it all clicks." },
+            { key: "c", label: "Building a complete map —", text: "I want to understand the entire system and how every piece connects." },
+            { key: "d", label: "Both —", text: "I explore broadly but I can't rest until it converges. The exploration serves the convergence." },
+          ]}
+          value={choiceAnswers["4b"]}
+          onChange={(v) => setChoice("4b", v)}
+        />
+        {choiceAnswers["4b"] && (
+          <div style={{ textAlign: "right" }}>
+            <button onClick={() => {
+              if (choiceAnswers["4b"] !== "d" && choiceAnswers["4b"] !== "b") transition("layer6");
+            }} style={btnStyle}>Continue →</button>
+          </div>
+        )}
+      </>
+    )}
+    {step === "4c" && (
+      <>
+        <ChoiceQuestion
+          question="Imagine a period where your various responsibilities — work, creative projects, relationships, personal interests — don't connect to any larger purpose or direction. How does that feel?"
+          options={[
+            { key: "a", label: "Destabilizing —", text: "energy leaks from every seam. I can't function well without an overarching thread connecting things." },
+            { key: "b", label: "Uncomfortable but manageable —", text: "I'd prefer a direction but I can get by without one." },
+            { key: "c", label: "Fine —", text: "I find meaning in the moment." },
+            { key: "d", label: "Freeing —", text: "no fixed direction means freedom to explore." },
+          ]}
+          value={choiceAnswers["4c"]}
+          onChange={(v) => setChoice("4c", v)}
+        />
+        {choiceAnswers["4c"] && (
+          <div style={{ textAlign: "right" }}>
+            <button onClick={() => {
+              if (choiceAnswers["4c"] === "a") addTag("vision_dependent");
+              transition("layer6");
+            }} style={btnStyle}>Continue →</button>
+          </div>
+        )}
+      </>
+    )}
+    {step === "done" && (
+      <div style={{ textAlign: "right" }}>
+        <button onClick={() => transition("layer6")} style={btnStyle}>Continue →</button>
+      </div>
+    )}
+  </div>
+);
+```
+
+};
+
+const renderLayer5a = () => {
+const needSecond = choiceAnswers[“5a1”] && (choiceAnswers[“5a1”] === “a” || choiceAnswers[“5a1”] === “c”);
+const step = !choiceAnswers[“5a1”] ? “5a1” : needSecond && !choiceAnswers[“5a2”] ? “5a2” : “done”;
+return (
+<div>
+<ProgressBar current={24} total={38} label="Social & Emotional Processing" />
+<h2 style={{ fontFamily: “‘Newsreader’, serif”, fontSize: 24, color: “#E2E8F0”, marginBottom: 6, fontWeight: 400 }}>Reading People & Situations</h2>
+<p style={{ fontFamily: “‘DM Sans’, sans-serif”, fontSize: 13, color: “#64748B”, marginBottom: 24 }}>These questions explore how you process social and emotional information.</p>
+{step === “5a1” && (
+<>
+<ChoiceQuestion
+question=“In a conversation, what pulls your attention most strongly — even when you’re trying to focus on something else?”
+options={[
+{ key: “a”, label: “Someone’s emotional state shifting —”, text: “a flicker of hurt, a suppressed reaction, tension under the surface.” },
+{ key: “b”, label: “A logical gap —”, text: “something that doesn’t add up in what’s being said.” },
+{ key: “c”, label: “Both equally —”, text: “emotional shifts and logical gaps both demand my attention.” },
+{ key: “d”, label: “Something unexpected —”, text: “a surprise, a pattern break, something I didn’t see coming.” },
+]}
+value={choiceAnswers[“5a1”]}
+onChange={(v) => setChoice(“5a1”, v)}
+/>
+{choiceAnswers[“5a1”] && !needSecond && (
+<div style={{ textAlign: “right” }}>
+<button onClick={() => transition(“layer6”)} style={btnStyle}>Continue →</button>
+</div>
+)}
+</>
+)}
+{step === “5a2” && (
+<>
+<ChoiceQuestion
+question=“When you understand something about another person — their motivation, their pain, what they need — how does that understanding arrive?”
+options={[
+{ key: “a”, label: “As a sudden knowing —”, text: “I see the pattern underneath their behavior all at once. The understanding arrives whole.” },
+{ key: “b”, label: “As a felt sense of the room —”, text: “I’m tracking the whole group, sensing the relational field, adjusting in real time.” },
+{ key: “c”, label: “Through conversation —”, text: “I understand people by talking with them, testing ideas, exploring together. Understanding builds interactively.” },
+]}
+value={choiceAnswers[“5a2”]}
+onChange={(v) => setChoice(“5a2”, v)}
+/>
+{choiceAnswers[“5a2”] && (
+<div style={{ textAlign: “right” }}>
+<button onClick={() => transition(“layer6”)} style={btnStyle}>Continue →</button>
+</div>
+)}
+</>
+)}
+{step === “done” && (
+<div style={{ textAlign: “right” }}>
+<button onClick={() => transition(“layer6”)} style={btnStyle}>Continue →</button>
+</div>
+)}
+</div>
+);
+};
+
+const renderLayer5b = () => {
+const need5b2 = choiceAnswers[“5b1”] === “c”;
+const step = !choiceAnswers[“5b1”] ? “5b1” : need5b2 && !choiceAnswers[“5b2”] ? “5b2” : “done”;
+return (
+<div>
+<ProgressBar current={24} total={38} label="Creative Expression" />
+<h2 style={{ fontFamily: “‘Newsreader’, serif”, fontSize: 24, color: “#E2E8F0”, marginBottom: 6, fontWeight: 400 }}>How You Create</h2>
+<p style={{ fontFamily: “‘DM Sans’, sans-serif”, fontSize: 13, color: “#64748B”, marginBottom: 24 }}>These questions explore where your creative impulse naturally goes.</p>
+{step === “5b1” && (
+<>
+<ChoiceQuestion
+question=“Your creative impulse — where does it want to go?”
+options={[
+{ key: “a”, label: “Toward language, narrative, emotion —”, text: “I want to express what I feel, capture inner experience, write or tell stories.” },
+{ key: “b”, label: “Toward material, sensory craft —”, text: “I want to work with texture, color, sound, movement. The medium matters as much as the message.” },
+{ key: “c”, label: “Both —”, text: “I move between expressive writing and hands-on craft depending on what the impulse demands.” },
+]}
+value={choiceAnswers[“5b1”]}
+onChange={(v) => setChoice(“5b1”, v)}
+/>
+{choiceAnswers[“5b1”] && !need5b2 && (
+<div style={{ textAlign: “right” }}>
+<button onClick={() => transition(“layer6”)} style={btnStyle}>Continue →</button>
+</div>
+)}
+</>
+)}
+{step === “5b2” && (
+<>
+<ChoiceQuestion
+question=“When one of your deeply held values is violated — when something genuine is replaced by something fake, or something beautiful is treated carelessly — how do you respond?”
+options={[
+{ key: “a”, label: “I withdraw inward —”, text: “I process emotionally, often through writing, reflection, or art. The response is internal.” },
+{ key: “b”, label: “I feel it physically —”, text: “a bodily wrongness, a visceral reaction. I may go quiet but the response is felt, not just thought.” },
+{ key: “c”, label: “I address it —”, text: “maybe not immediately, but I can’t let it stand.” },
+]}
+value={choiceAnswers[“5b2”]}
+onChange={(v) => setChoice(“5b2”, v)}
+/>
+{choiceAnswers[“5b2”] && (
+<div style={{ textAlign: “right” }}>
+<button onClick={() => transition(“layer6”)} style={btnStyle}>Continue →</button>
+</div>
+)}
+</>
+)}
+{step === “done” && (
+<div style={{ textAlign: “right” }}>
+<button onClick={() => transition(“layer6”)} style={btnStyle}>Continue →</button>
+</div>
+)}
+</div>
+);
+};
+
+const renderLayer6 = () => {
+const salienceDone = LAYER6_SALIENCE.every(i => answers[i.id] != null);
+const rewardDone = LAYER6_REWARD.every(i => answers[i.id] != null);
+const salienceAnswered = LAYER6_SALIENCE.filter(i => answers[i.id] != null).length;
+const rewardAnswered = LAYER6_REWARD.filter(i => answers[i.id] != null).length;
+const allDone = salienceDone && rewardDone;
+return (
+<div>
+<ProgressBar current={26 + salienceAnswered + rewardAnswered} total={38} label=“Attention & Energy” />
+<h2 style={{ fontFamily: “‘Newsreader’, serif”, fontSize: 24, color: “#E2E8F0”, marginBottom: 6, fontWeight: 400 }}>What Captures Your Attention</h2>
+<p style={{ fontFamily: “‘DM Sans’, sans-serif”, fontSize: 13, color: “#64748B”, marginBottom: 24 }}>Rate each statement from 1 (Strongly Disagree) to 5 (Strongly Agree).</p>
+{LAYER6_SALIENCE.map(item => (
+<LikertScale key={item.id} item={item} value={answers[item.id]} onChange={setAnswer} />
+))}
+{salienceDone && (
+<>
+<h2 style={{ fontFamily: “‘Newsreader’, serif”, fontSize: 24, color: “#E2E8F0”, marginBottom: 6, fontWeight: 400, marginTop: 32 }}>What Energizes You</h2>
+{LAYER6_REWARD.map(item => (
+<LikertScale key={item.id} item={item} value={answers[item.id]} onChange={setAnswer} />
+))}
+</>
+)}
+{allDone && (
+<div style={{ textAlign: “right”, marginTop: 8 }}>
+<button onClick={() => transition(“layer7”)} style={btnStyle}>Continue →</button>
+</div>
+)}
+</div>
+);
+};
+
+const renderLayer7 = () => {
+const showTranslation = gatingLevel === “high” && ecnLevel === “high”;
+const showContextSwitch = choiceAnswers[“4b”] === “d” || choiceAnswers[“4b”] === “b”;
+const showPaceMismatch = ecnLevel === “high”;
+
+```
+const questions = [];
+if (showTranslation) questions.push("7a");
+questions.push("7b", "7c", "7d");
+if (showContextSwitch) questions.push("7e");
+if (showPaceMismatch) questions.push("7f");
+
+const allAnswered = questions.every(q => choiceAnswers[q] != null);
+
+// Determine which question to show next
+const currentQ = questions.find(q => choiceAnswers[q] == null);
+
+return (
+  <div>
+    <ProgressBar current={35} total={38} label="Almost Done — Processing Edges" />
+    <h2 style={{ fontFamily: "'Newsreader', serif", fontSize: 24, color: "#E2E8F0", marginBottom: 6, fontWeight: 400 }}>Where Things Get Hard</h2>
+    <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "#64748B", marginBottom: 24 }}>These final questions identify your specific friction points and recovery needs.</p>
+
+    {currentQ === "7a" && (
+      <ChoiceQuestion
+        question="When you need to explain a complex idea you understand deeply, what's the hardest part?"
+        options={[
+          { key: "a", label: "I need their frame of reference first —", text: "without knowing what they already understand, I can't choose where to begin." },
+          { key: "b", label: "The understanding lives below words —", text: "it's experiential or felt, not something I can just state. Translating it is the hard part." },
+          { key: "c", label: "I'm better in writing —", text: "I need editing time to get the translation right. Speaking loses the nuance." },
+          { key: "d", text: "I can usually do it fairly easily on the fly." },
+        ]}
+        value={choiceAnswers["7a"]}
+        onChange={(v) => { setChoice("7a", v); if (v === "a") addTag("frame_dependent"); if (v === "b") addTag("preverbal_knowledge"); if (v === "c") addTag("written_preferred"); if (v === "d") addTag("fluent_translator"); }}
+      />
+    )}
+    {currentQ === "7b" && (
+      <ChoiceQuestion
+        question="You're in the middle of explaining something complex and someone interrupts with a question. What happens internally?"
+        options={[
+          { key: "a", label: "The whole thing collapses —", text: "I was holding a specific path through my understanding, and the interruption destroys it. Rebuilding is very hard." },
+          { key: "b", label: "I lose the thread —", text: "I was building toward something I could feel, and the interruption snaps me out of it." },
+          { key: "c", label: "I absorb it and adapt —", text: "my explanation restructures in real time to incorporate the question." },
+          { key: "d", text: "Minor disruption. I answer quickly and get back on track." },
+        ]}
+        value={choiceAnswers["7b"]}
+        onChange={(v) => { setChoice("7b", v); if (v === "a") addTag("scaffold_collapse"); if (v === "b") addTag("thread_break"); if (v === "c") addTag("adaptive_explain"); if (v === "d") addTag("resilient_explain"); }}
+      />
+    )}
+    {currentQ === "7c" && (
+      <ChoiceQuestion
+        question="Which situation is most costly to your functioning — not just unpleasant, but genuinely depleting? Pick the worst one."
+        options={[
+          { key: "a", text: "Explaining your reasoning to someone who can't follow it but assumes they can." },
+          { key: "b", text: "Being in environments that violate your sensory or aesthetic standards — ugly, harsh, careless spaces." },
+          { key: "c", text: "Absorbing other people's emotional states without being able to discharge them." },
+          { key: "d", text: "Having your reasoning dismissed — told you're 'overthinking' or being 'too complicated.'" },
+        ]}
+        value={choiceAnswers["7c"]}
+        onChange={(v) => { setChoice("7c", v); addTag("drain_" + v); }}
+      />
+    )}
+    {currentQ === "7d" && (
+      <ChoiceQuestion
+        question="After a full day of social interaction — meetings, group work, conversation — what do you need?"
+        options={[
+          { key: "a", label: "Complete solitude —", text: "no input, let my system settle." },
+          { key: "b", label: "One trusted person —", text: "comfortable presence, no more performance." },
+          { key: "c", label: "I'm actually energized —", text: "the interaction fueled me." },
+          { key: "d", label: "Something physical —", text: "exercise, nature, using my hands — to get out of my head." },
+        ]}
+        value={choiceAnswers["7d"]}
+        onChange={(v) => { setChoice("7d", v); if (v === "a") addTag("solitary_recovery"); if (v === "b") addTag("selective_recovery"); if (v === "c") addTag("extraverted_recovery"); if (v === "d") addTag("embodied_recovery"); }}
+      />
+    )}
+    {currentQ === "7e" && (
+      <ChoiceQuestion
+        question="When you're working across multiple domains — say, a technical project, a creative pursuit, and family — what makes the difference between a day that flows and one that's exhausting?"
+        options={[
+          { key: "a", label: "Whether I can see how they connect —", text: "if they all feel like facets of one thing, switching is effortless. If they feel like silos, every transition costs energy." },
+          { key: "b", label: "Whether I get enough uninterrupted time —", text: "I can compartmentalize, but I need decent blocks in each." },
+          { key: "c", label: "Whether people are cooperating —", text: "social friction matters more than the task-switching." },
+          { key: "d", label: "Variety actually helps —", text: "switching between domains keeps me engaged." },
+        ]}
+        value={choiceAnswers["7e"]}
+        onChange={(v) => { setChoice("7e", v); if (v === "a") addTag("vision_dependent"); if (v === "b") addTag("block_dependent"); if (v === "c") addTag("social_dependent"); if (v === "d") addTag("variety_seeking"); }}
+      />
+    )}
+    {currentQ === "7f" && (
+      <ChoiceQuestion
+        question="In conversation with someone who processes and communicates more slowly than you — taking a long time to make a point you already understood — what's your experience?"
+        options={[
+          { key: "a", label: "My mind races ahead —", text: "I'm already thinking along parallel lines. If I engage naturally, they find me distracting or off-topic." },
+          { key: "b", label: "I tune out —", text: "I nod but I've mentally moved on. When they ask me something, I've lost track of where they are." },
+          { key: "c", label: "I can match their pace —", text: "it costs me, but I can do it deliberately if I care about the relationship." },
+          { key: "d", text: "I don't really experience this. People and I generally communicate at similar speeds." },
+        ]}
+        value={choiceAnswers["7f"]}
+        onChange={(v) => { setChoice("7f", v); if (v === "a") addTag("pace_mismatch"); if (v === "b") addTag("attention_drift"); if (v === "c") addTag("deliberate_pacing"); }}
+      />
+    )}
+    {allAnswered && (
+      <div style={{ textAlign: "right", marginTop: 16 }}>
+        <button onClick={generateResults} style={{
+          ...btnStyle, padding: "14px 48px", fontSize: 15,
+          boxShadow: "0 4px 24px rgba(99, 102, 241, 0.3)",
+        }}>See My Profile →</button>
+      </div>
+    )}
+  </div>
+);
+```
+
+};
+
+const renderResults = () => {
+if (!resultProfile) return null;
+const p = resultProfile;
+const reward = scores.reward || {};
+const rewardLabels = { epistemic: “Understanding & Insight”, social: “Connection & Belonging”, aesthetic: “Beauty & Meaning-Making”, mastery: “Competence & Performance” };
+const dimensionLabels = {
+gating: “Sensory Openness”,
+dmn: “Inner World Richness”,
+ecn: “Analytical Drive”,
+};
+const frictionDescriptions = {
+scaffold_collapse: “When interrupted mid-explanation, your mental scaffolding collapses — you were holding a specific path through complex understanding, and the interruption destroys it. Rebuilding from a different entry point feels nearly impossible in the moment.”,
+thread_break: “Interruptions break the emotional or felt thread you were building toward — you were working toward something you could feel, and the interruption severs the connection.”,
+frame_dependent: “You need to understand your listener’s frame of reference before you can explain something complex. Without knowing what they already understand, you can’t choose where to begin.”,
+preverbal_knowledge: “Much of your deepest understanding lives below the level of language — it’s experiential or felt, not propositional. Being asked to ‘just say it simply’ can feel like being asked to translate music into a spreadsheet.”,
+written_preferred: “You’re more precise in writing than in speech — you need editing time to get the translation from internal understanding to external communication right.”,
+vision_dependent: “Your energy and focus depend on seeing connections between your different domains. When responsibilities fragment into disconnected silos, every context switch costs energy. When they feel like facets of one thing, you’re nearly unstoppable.”,
+pace_mismatch: “Your processing speed creates a persistent social cost — your mind races ahead along parallel lines, and engaging naturally can make others feel you’re off-topic or overwhelming.”,
+attention_drift: “In slow-paced conversations, your attention drifts to internal processing — you maintain the social performance but lose track of where the other person is.”,
+deliberate_pacing: “You can match others’ communication pace, but it’s a deliberate and costly act of calibration.”,
+};
+const drainDescriptions = {
+drain_a: “Explaining your reasoning to someone who can’t follow it but assumes they can is particularly depleting for you.”,
+drain_b: “Environments that violate your sensory or aesthetic standards — ugly, harsh, or careless spaces — impose a steady cognitive tax on your functioning.”,
+drain_c: “Absorbing other people’s emotional states without being able to discharge them creates an accumulating load that’s hard to see from outside.”,
+drain_d: “Having your reasoning dismissed as ‘overthinking’ or ‘being too complicated’ is experienced as a fundamental misrecognition of how you work.”,
+};
+const salienceDescriptions = {
+“Dual salience”: “You track both emotional dynamics and structural patterns simultaneously. This is a genuine architectural feature — not confusion or indecision — but it comes with significant bandwidth cost. You’re processing on two channels at once, which means you see more than most people but also spend more energy doing it.”,
+“Emotional bias”: “Your attention is pulled first toward emotional dynamics — shifts in feeling, relational tension, what people need. You notice the human layer before the structural layer.”,
+“Structural bias”: “Your attention is pulled first toward patterns, logic, and structure — inconsistencies, systems, how things fit together. You notice the framework before the feelings.”,
+“Balanced”: “Your attention distributes relatively evenly between emotional and structural information. Neither channel dominates.”,
+};
+
+```
+return (
+  <div style={{ animation: "fadeUp 0.6s ease-out both" }}>
+    <div style={{ textAlign: "center", marginBottom: 40 }}>
+      <div style={{ display: "inline-block", padding: "6px 20px", borderRadius: 20, background: `${p.color}20`, border: `1px solid ${p.color}40`, marginBottom: 16 }}>
+        <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, fontWeight: 600, color: p.color, letterSpacing: "0.1em", textTransform: "uppercase" }}>Your Profile</span>
+      </div>
+      <h1 style={{ fontFamily: "'Newsreader', serif", fontSize: 36, color: "#E2E8F0", fontWeight: 400, lineHeight: 1.2, marginBottom: 12 }}>{p.name}</h1>
+      <p style={{ fontFamily: "'Newsreader', serif", fontSize: 18, lineHeight: 1.6, color: "#94A3B8", maxWidth: 520, margin: "0 auto", fontStyle: "italic" }}>{p.summary}</p>
+    </div>
+
+    <SectionCard title="Your Dimensions">
+      <DimensionBar label={dimensionLabels.gating} value={scores.gating} color="#6366F1" />
+      <DimensionBar label={dimensionLabels.dmn} value={scores.dmn} color="#8B5CF6" />
+      <DimensionBar label={dimensionLabels.ecn} value={scores.ecn} color="#3B82F6" />
+      <DimensionBar label="Emotional Attention" value={scores.emotionalSalience} color="#EC4899" />
+      <DimensionBar label="Structural Attention" value={scores.structuralSalience} color="#14B8A6" />
+    </SectionCard>
+
+    <SectionCard title="How You're Wired">
+      <ProfileParagraph>{p.architecture}</ProfileParagraph>
+    </SectionCard>
+
+    <SectionCard title="What This Looks Like In Practice">
+      <ProfileParagraph>{p.lived}</ProfileParagraph>
+    </SectionCard>
+
+    <SectionCard title="Your Strengths">
+      <ProfileParagraph>{p.strengths}</ProfileParagraph>
+    </SectionCard>
+
+    <SectionCard title="The Costs & Tradeoffs">
+      <ProfileParagraph>{p.daytoday}</ProfileParagraph>
+    </SectionCard>
+
+    <SectionCard title="Attention Pattern">
+      <div style={{ padding: "12px 16px", background: "rgba(167, 139, 250, 0.06)", borderRadius: 8, border: "1px solid #1E293B", marginBottom: 14 }}>
+        <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, color: "#C4B5FD", fontWeight: 600 }}>{scores.salienceType}</span>
+        {scores.salienceType === "Dual salience" && <span style={{ color: "#FBBF24", fontSize: 13, marginLeft: 8 }}>⚡ High bandwidth</span>}
+      </div>
+      <ProfileParagraph>{salienceDescriptions[scores.salienceType]}</ProfileParagraph>
+    </SectionCard>
+
+    <SectionCard title="What Energizes You">
+      {reward.pathways && Object.entries(reward.pathways).sort((a,b) => b[1] - a[1]).map(([key, val]) => (
+        <DimensionBar key={key} label={rewardLabels[key] || key} value={val} color={key === reward.primary ? "#FBBF24" : "#475569"} />
+      ))}
+      <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "#94A3B8", marginTop: 8 }}>
+        Primary drive: <span style={{ color: "#FBBF24", fontWeight: 600 }}>{rewardLabels[reward.primary]}</span>
+        {reward.dual && <span style={{ color: "#F97316" }}> + {rewardLabels[reward.secondary]} (competing drives — you may oscillate between these)</span>}
+      </p>
+    </SectionCard>
+
+    {tags.filter(t => frictionDescriptions[t] || drainDescriptions[t]).length > 0 && (
+      <SectionCard title="Your Specific Friction Points">
+        {tags.filter(t => frictionDescriptions[t] || drainDescriptions[t]).map(t => (
+          <p key={t} style={{ fontFamily: "'Newsreader', serif", fontSize: 15, lineHeight: 1.7, color: "#CBD5E1", marginBottom: 12, paddingLeft: 14, borderLeft: "2px solid #334155" }}>
+            {frictionDescriptions[t] || drainDescriptions[t]}
+          </p>
+        ))}
+      </SectionCard>
+    )}
+
+    {tags.length > 0 && (
+      <SectionCard title="Processing Signatures">
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {tags.map(t => (
+            <span key={t} style={{
+              padding: "4px 12px", borderRadius: 6, background: "rgba(99, 102, 241, 0.1)",
+              border: "1px solid #334155", fontFamily: "'DM Sans', sans-serif", fontSize: 12,
+              color: "#A78BFA", letterSpacing: "0.02em",
+            }}>{t.replace(/_/g, " ")}</span>
+          ))}
+        </div>
+      </SectionCard>
+    )}
+
+    {/* MBTI/Enneagram collapsed at bottom */}
+    <div style={{ marginTop: 8, marginBottom: 28 }}>
+      <button
+        onClick={() => setShowTypology(!showTypology)}
+        style={{
+          background: "transparent", border: "1px solid #1E293B", borderRadius: 10,
+          padding: "12px 18px", width: "100%", textAlign: "left", cursor: "pointer",
+          fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "#64748B",
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          transition: "all 0.2s ease",
+        }}
+      >
+        <span>Traditional Typology Approximations</span>
+        <span style={{ transform: showTypology ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s ease" }}>▾</span>
+      </button>
+      {showTypology && (
+        <div style={{ padding: "16px 18px", background: "rgba(15, 23, 42, 0.4)", border: "1px solid #1E293B", borderTop: "none", borderRadius: "0 0 10px 10px" }}>
+          <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "#64748B", marginBottom: 12, lineHeight: 1.5 }}>
+            These are rough translations into familiar frameworks. The dimensional profile above is more precise.
+          </p>
+          <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+            <div>
+              <span style={{ fontSize: 11, color: "#475569", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>MBTI Neighborhood</span>
+              <div style={{ fontSize: 16, color: "#CBD5E1", fontFamily: "'Newsreader', serif", marginTop: 4 }}>{p.mbti}</div>
+            </div>
+            <div>
+              <span style={{ fontSize: 11, color: "#475569", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>Enneagram Range</span>
+              <div style={{ fontSize: 16, color: "#CBD5E1", fontFamily: "'Newsreader', serif", marginTop: 4 }}>{p.enneagram}</div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+
+    <div style={{ textAlign: "center", marginTop: 16 }}>
+      <button onClick={() => {
+        setPhase("intro"); setAnswers({}); setChoiceAnswers({}); setStarred({}); setTags([]);
+        setResultProfile(null); setScores({}); setLayer4aFinalized(false); setShowTypology(false);
+      }} style={{
+        padding: "12px 36px", background: "transparent", border: "1.5px solid #334155",
+        borderRadius: 10, color: "#94A3B8", fontFamily: "'DM Sans', sans-serif",
+        fontSize: 14, cursor: "pointer", transition: "all 0.2s ease",
+      }}>Retake Assessment</button>
+    </div>
+  </div>
+);
+```
+
+};
+
+// ─── MAIN RENDER ───
+const content = {
+intro: renderIntro,
+layer1: () => renderLikertLayer(LAYER1_ITEMS, “Sensory & Emotional Openness”, “Rate each statement from 1 (Strongly Disagree) to 5 (Strongly Agree).”, 0, () => transition(“layer2”)),
+layer2: () => renderLikertLayer(LAYER2_ITEMS, “Inner World & Imagination”, “Rate each statement from 1 (Strongly Disagree) to 5 (Strongly Agree).”, 9, () => transition(getLayer2Branch())),
+shortcutA: renderShortcutA,
+shortcutB: renderShortcutB,
+layer3: () => renderLikertLayer(LAYER3_ITEMS, “Analysis & Problem-Solving”, “Rate each statement from 1 (Strongly Disagree) to 5 (Strongly Agree).”, 16, () => transition(getLayer3Branch())),
+layer4: renderLayer4,
+layer5a: renderLayer5a,
+layer5b: renderLayer5b,
+layer6: renderLayer6,
+layer7: renderLayer7,
+results: renderResults,
+};
+
+return (
+<>
+<div ref={containerRef} style={{
+minHeight: “100vh”,
+background: “linear-gradient(180deg, #0B0F1A 0%, #0F172A 50%, #0B0F1A 100%)”,
+color: “#E2E8F0”, padding: “48px 24px”, overflowY: “auto”,
+}}>
+<div style={{
+maxWidth: 640, margin: “0 auto”,
+opacity: fadeIn ? 1 : 0, transform: fadeIn ? “translateY(0)” : “translateY(8px)”,
+transition: “opacity 0.3s ease, transform 0.3s ease”,
+}}>
+{content[phase] ? content[phase]() : renderIntro()}
+</div>
+<div style={{ textAlign: “center”, marginTop: 48, fontFamily: “‘DM Sans’, sans-serif”, fontSize: 11, color: “#334155”, letterSpacing: “0.08em” }}>
+NEURAL PROCESSING PROFILE · v3
+</div>
+</div>
+</>
+);
+}
+
+// Mount the app
+ReactDOM.createRoot(document.getElementById(‘root’)).render(React.createElement(NeuralProcessingQuiz));
+</script>
+
+</body>
+</html>
