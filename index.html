@@ -1,85 +1,116 @@
 <!DOCTYPE html>
 
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Neural Processing Profile</title>
-  <meta name="description" content="Map your cognitive architecture across six dimensions.">
-  <meta property="og:title" content="Neural Processing Profile">
-  <meta property="og:description" content="An adaptive assessment that maps how you take in information, what you do with it internally, and where your energy goes.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,600;1,6..72,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body, #root { min-height: 100vh; background: #0B0F1A; color: #E2E8F0; }
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
-  </style>
-  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Neural Processing Profile</title>
+	<meta name="description" content="Map your cognitive architecture across six dimensions.">
+	<meta property="og:title" content="Neural Processing Profile">
+	<meta property="og:description" content="An adaptive assessment that maps how you take in information, what you do with it internally, and where your energy goes.">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,600;1,6..72,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<style>
+		@keyframes fadeUp {
+			from {
+				opacity: 0;
+				transform: translateY(12px);
+			}
+
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+
+		html,
+		body,
+		#root {
+			min-height: 100vh;
+			background: #0B0F1A;
+			color: #E2E8F0;
+		}
+
+		::-webkit-scrollbar {
+			width: 4px;
+		}
+
+		::-webkit-scrollbar-track {
+			background: transparent;
+		}
+
+		::-webkit-scrollbar-thumb {
+			background: #334155;
+			border-radius: 2px;
+		}
+	</style>
+	<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+	<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+	<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
 </head>
+
 <body>
-  <div id="root"></div>
-  <script type="text/babel" data-type="module">
-const { useState, useEffect, useCallback, useMemo, useRef } = React;
+	<div id="root"></div>
+	<script type="text/babel" data-type="module">
+		const { useState, useEffect, useCallback, useMemo, useRef } = React;
 
 // ─── PROFILE DEFINITIONS (rich descriptions, no MBTI/Enneagram in main view) ───
 const PROFILES = {
 analytical_explorer: {
-name: “Analytical Explorer”,
-short: “AE”,
-color: “#3B82F6”,
-mbti: “INTP / ENTP”,
-enneagram: “5w4 or 5w6”,
-summary: “You move through the world by branching — every idea opens three more doors, every system reveals deeper structure, and the exploration itself is the reward.”,
-architecture: “Your mind combines high sensory openness with a rich inner world and powerful analytical capacity. You don’t just think about things — you build comprehensive mental models that attempt to capture the full complexity of what you encounter. Information flows in freely, gets simulated and cross-referenced internally, and is organized into frameworks almost automatically.”,
-lived: “In practice, this means your mind is rarely quiet. You’re the person who reads about one topic and emerges four hours later having followed a thread through six adjacent fields. Conversations with you tend to branch — you see connections others miss, and you instinctively want to map the whole territory rather than settle for a single path through it. Your understanding tends to be broad and interconnected rather than narrow and deep, though you’re capable of depth when a particular system captures your attention.”,
-strengths: “You’re exceptionally good at seeing how things relate across domains, identifying non-obvious patterns, and building models that make complex systems legible. You bring a rare combination of intellectual range and analytical precision that makes you valuable in any context requiring creative problem-solving or systems thinking.”,
-daytoday: “The cost of this architecture is real: you may struggle to explain your thinking to others (it’s hard to linearize a web), you can get lost in exploration at the expense of execution, and you may find it genuinely difficult to stop analyzing and just act. Environments that demand narrow focus or rote repetition will drain you quickly. You thrive when given complex, open-ended problems and the freedom to follow your curiosity.”,
+name: "Analytical Explorer",
+short: "AE",
+color: "#3B82F6",
+mbti: "INTP / ENTP",
+enneagram: "5w4 or 5w6",
+summary: "You move through the world by branching — every idea opens three more doors, every system reveals deeper structure, and the exploration itself is the reward.",
+architecture: "Your mind combines high sensory openness with a rich inner world and powerful analytical capacity. You don’t just think about things — you build comprehensive mental models that attempt to capture the full complexity of what you encounter. Information flows in freely, gets simulated and cross-referenced internally, and is organized into frameworks almost automatically.",
+lived: "In practice, this means your mind is rarely quiet. You’re the person who reads about one topic and emerges four hours later having followed a thread through six adjacent fields. Conversations with you tend to branch — you see connections others miss, and you instinctively want to map the whole territory rather than settle for a single path through it. Your understanding tends to be broad and interconnected rather than narrow and deep, though you’re capable of depth when a particular system captures your attention.",
+strengths: "You’re exceptionally good at seeing how things relate across domains, identifying non-obvious patterns, and building models that make complex systems legible. You bring a rare combination of intellectual range and analytical precision that makes you valuable in any context requiring creative problem-solving or systems thinking.",
+daytoday: "The cost of this architecture is real: you may struggle to explain your thinking to others (it’s hard to linearize a web), you can get lost in exploration at the expense of execution, and you may find it genuinely difficult to stop analyzing and just act. Environments that demand narrow focus or rote repetition will drain you quickly. You thrive when given complex, open-ended problems and the freedom to follow your curiosity.",
 },
 convergent_architect: {
-name: “Convergent Architect”,
-short: “CA”,
-color: “#8B5CF6”,
-mbti: “INTJ / INFJ”,
-enneagram: “5w4 or 1w9”,
-summary: “You process the world by seeking the one deep pattern underneath everything — information converges into unified insights that arrive whole, not assembled piece by piece.”,
-architecture: “Your mind combines rich inner simulation with powerful analytical capacity, but oriented toward synthesis rather than expansion. Where others branch outward, you drive inward — pulling disparate information into a single coherent vision. Your insights tend to arrive as gestalts: suddenly the pieces click and you see the whole.”,
-lived: “You probably know the experience of working on a problem for days or weeks, and then having the answer simply appear — fully formed, as if your mind had been assembling it below conscious awareness. You’re drawn to frameworks, theories, and architectures that unify. You find it deeply satisfying when many separate observations collapse into a single elegant explanation. You may frustrate others by being certain about conclusions you can’t yet articulate — the knowing arrives before the words.”,
-strengths: “You excel at long-range vision, strategic thinking, and building systems that hold together under pressure. Your ability to synthesize across domains and see where things are heading makes you invaluable for planning, design, and any work that requires seeing the whole before building the parts.”,
-daytoday: “The vulnerability of this architecture is its dependency on coherence. When your work, relationships, and interests don’t connect to a larger purpose, it can feel genuinely destabilizing — like cognitive entropy. You may also struggle with the gap between your inner vision and the slow, messy process of realizing it in the world. Patience with incremental progress doesn’t come naturally when you can already see the finished form.”,
+name: "Convergent Architect",
+short: "CA",
+color: "#8B5CF6",
+mbti: "INTJ / INFJ",
+enneagram: "5w4 or 1w9",
+summary: "You process the world by seeking the one deep pattern underneath everything — information converges into unified insights that arrive whole, not assembled piece by piece.”,
+architecture: "Your mind combines rich inner simulation with powerful analytical capacity, but oriented toward synthesis rather than expansion. Where others branch outward, you drive inward — pulling disparate information into a single coherent vision. Your insights tend to arrive as gestalts: suddenly the pieces click and you see the whole.",
+lived: "You probably know the experience of working on a problem for days or weeks, and then having the answer simply appear — fully formed, as if your mind had been assembling it below conscious awareness. You’re drawn to frameworks, theories, and architectures that unify. You find it deeply satisfying when many separate observations collapse into a single elegant explanation. You may frustrate others by being certain about conclusions you can’t yet articulate — the knowing arrives before the words.”,
+strengths: "You excel at long-range vision, strategic thinking, and building systems that hold together under pressure. Your ability to synthesize across domains and see where things are heading makes you invaluable for planning, design, and any work that requires seeing the whole before building the parts.",
+daytoday: "The vulnerability of this architecture is its dependency on coherence. When your work, relationships, and interests don’t connect to a larger purpose, it can feel genuinely destabilizing — like cognitive entropy. You may also struggle with the gap between your inner vision and the slow, messy process of realizing it in the world. Patience with incremental progress doesn’t come naturally when you can already see the finished form.",
 },
 ae_ca_hybrid: {
-name: “Analytical Explorer ↔ Convergent Architect”,
-short: “AE↔CA”,
-color: “#6366F1”,
-mbti: “INTJ / INTP (oscillating)”,
-enneagram: “5w4 (most common)”,
-summary: “You operate across two modes that most people experience as separate: expansive exploration and convergent synthesis. You explore broadly but can’t rest until it converges.”,
-architecture: “This is a high-bandwidth architecture that runs two engines simultaneously. One part of your mind is constantly branching — following connections, mapping adjacent territory, pulling in new information. The other is constantly synthesizing — looking for the underlying pattern, testing whether the new data fits the emerging model, driving toward a unified understanding. These two processes fuel each other: exploration generates the raw material that convergence needs, and convergence generates the questions that direct further exploration.”,
-lived: “You probably experience intellectual life as a cycle: periods of voracious intake where everything is interesting and connected, followed by periods of intense synthesis where the pieces suddenly arrange themselves into a pattern you can see but not yet articulate. You may frustrate both the pure explorers in your life (who think you’re too focused on ‘the answer’) and the pure builders (who think you waste time on tangents). The truth is that your tangents serve your convergence — they just do it on a timeline others can’t see.”,
-strengths: “You combine the explorer’s range with the architect’s depth. This makes you exceptionally good at solving novel, complex problems that require both broad knowledge and structural insight. You can see both the forest and the trees, and more importantly, you can see how specific trees reveal the shape of the forest.”,
-daytoday: “The cost is significant: this architecture demands a lot of energy to run. You’re processing on two tracks simultaneously, and when they’re not aligned — when your exploration and your convergence are pointing in different directions — it can feel like internal friction. You’re also deeply dependent on having a unifying thread across your domains. When your work, creative life, and relationships feel like disconnected silos, the switching costs become enormous. When they feel like facets of one thing, you’re nearly unstoppable.”,
+name: "Analytical Explorer ↔ Convergent Architect",
+short: "AE↔CA",
+color: "#6366F1",
+mbti: "INTJ / INTP (oscillating)",
+enneagram: "5w4 (most common)",
+summary: "You operate across two modes that most people experience as separate: expansive exploration and convergent synthesis. You explore broadly but can’t rest until it converges.”,
+architecture: "This is a high-bandwidth architecture that runs two engines simultaneously. One part of your mind is constantly branching — following connections, mapping adjacent territory, pulling in new information. The other is constantly synthesizing — looking for the underlying pattern, testing whether the new data fits the emerging model, driving toward a unified understanding. These two processes fuel each other: exploration generates the raw material that convergence needs, and convergence generates the questions that direct further exploration.",
+lived: "You probably experience intellectual life as a cycle: periods of voracious intake where everything is interesting and connected, followed by periods of intense synthesis where the pieces suddenly arrange themselves into a pattern you can see but not yet articulate. You may frustrate both the pure explorers in your life (who think you’re too focused on ‘the answer’) and the pure builders (who think you waste time on tangents). The truth is that your tangents serve your convergence — they just do it on a timeline others can’t see.",
+strengths: "You combine the explorer’s range with the architect’s depth. This makes you exceptionally good at solving novel, complex problems that require both broad knowledge and structural insight. You can see both the forest and the trees, and more importantly, you can see how specific trees reveal the shape of the forest.”,
+daytoday: "The cost is significant: this architecture demands a lot of energy to run. You’re processing on two tracks simultaneously, and when they’re not aligned — when your exploration and your convergence are pointing in different directions — it can feel like internal friction. You’re also deeply dependent on having a unifying thread across your domains. When your work, creative life, and relationships feel like disconnected silos, the switching costs become enormous. When they feel like facets of one thing, you’re nearly unstoppable.",
 },
 immersive_explorer: {
-name: “Immersive Explorer”,
-short: “IE”,
-color: “#EC4899”,
-mbti: “INFP”,
-enneagram: “4w5 or 9w1”,
-summary: “You process the world through deep feeling and narrative — your inner life is vivid, emotionally rich, and oriented toward meaning-making through language and story.”,
-architecture: “Your mind prioritizes depth of felt experience over structural analysis. You have high sensory openness and a rich inner world, but your processing is oriented toward inhabiting experience rather than dissecting it. You don’t analyze a sunset — you feel it, and later you might find words for what it meant.”,
-lived: “Your inner world is likely populated with vivid imagery, imagined conversations, emotional landscapes, and narrative fragments. You process important experiences by turning them over internally, sometimes for weeks or months, until they resolve into something you can express. Writing, art, or other creative expression isn’t a hobby for you — it’s how you complete your processing. Without it, experiences accumulate unfinished.”,
-strengths: “You have an extraordinary capacity for emotional depth, empathy through felt experience, and the kind of meaning-making that connects disparate life events into a coherent personal narrative. Your creative expression, when you find the right medium, can move people in ways that more analytical minds cannot.”,
-daytoday: “The challenge is that this depth takes time and space. You need significant solitude to process, and interruptions to your inner work can feel like violations. You may struggle in environments that demand quick, surface-level engagement, and you may find it painful to explain yourself to people who process more analytically. The gap between what you feel and what you can say is real and persistent.”,
+name: "Immersive Explorer",
+short: "IE",
+color: "#EC4899",
+mbti: "INFP",
+enneagram: "4w5 or 9w1",
+summary: "You process the world through deep feeling and narrative — your inner life is vivid, emotionally rich, and oriented toward meaning-making through language and story.",
+architecture: "Your mind prioritizes depth of felt experience over structural analysis. You have high sensory openness and a rich inner world, but your processing is oriented toward inhabiting experience rather than dissecting it. You don’t analyze a sunset — you feel it, and later you might find words for what it meant.",
+lived: "Your inner world is likely populated with vivid imagery, imagined conversations, emotional landscapes, and narrative fragments. You process important experiences by turning them over internally, sometimes for weeks or months, until they resolve into something you can express. Writing, art, or other creative expression isn’t a hobby for you — it’s how you complete your processing. Without it, experiences accumulate unfinished.",
+strengths: "You have an extraordinary capacity for emotional depth, empathy through felt experience, and the kind of meaning-making that connects disparate life events into a coherent personal narrative. Your creative expression, when you find the right medium, can move people in ways that more analytical minds cannot.",
+daytoday: "The challenge is that this depth takes time and space. You need significant solitude to process, and interruptions to your inner work can feel like violations. You may struggle in environments that demand quick, surface-level engagement, and you may find it painful to explain yourself to people who process more analytically. The gap between what you feel and what you can say is real and persistent.",
 },
 aesthetic_guardian: {
 name: “Aesthetic Guardian”,
@@ -1216,4 +1247,5 @@ root.render(<NeuralProcessingQuiz />);
 </script>
 
 </body>
+
 </html>
